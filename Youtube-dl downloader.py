@@ -1,6 +1,8 @@
 # coding: utf-8
 # author: Shaun Hevey
 # youtube-dl downloader is used to download youtube_dl and make it work with pythonista.
+# Replace function came from http://stackoverflow.com/questions/39086/search-and-replace-a-line-in-a-file-in-python
+# Download file was adapted from Python file downloader (https://gist.github.com/89edf288a15fde45682a)
 
 import ui
 import shutil
@@ -16,8 +18,6 @@ youtubedl_location = './site-packages/'
 backup_location = './backup/youtube_dl/'
 youtubedl_downloadurl = 'https://github.com/rg3/youtube-dl/archive/master.zip'
 youtubedl_unarchive_location = './youtube-dl-master/'
-youtubedl_ui_url = 'https://codeload.github.com/HyShai/youtube-dl/zip/ytdl-pythonista'
-youtubedl_ui_extract_path = './youtube-dl-ytdl-pythonista/'
 files_to_change = [('utils.py','import ctypes','#import ctypes'),('utils.py','import pipes','#import pipes'),('YoutubeDL.py','self._err_file.isatty() and ',''),('downloader/common.py','(\'\r\x1b[K\' if sys.stderr.isatty() else \'\r\')','\'r\''),('downloader/common.py','(\'\r\x1b[K\' if sys.stderr.isatty() else \'\r\')','\r'),('extractor/common.py',' and sys.stderr.isatty()','')]
                                                                                                                                                                                                                                                   
                                                                                                                                                                                     
@@ -31,10 +31,6 @@ def backup_youtubedl(sender):
 		shutil.move(youtubedl_location+youtubedl_dir,backup_location+youtubedl_dir+ time.strftime('%Y%m%d%H%M%S'))
 		
 	console.hide_activity()
-		
-	
-def delete_youtubedl_backups(sender):
-	return 
 
 @ui.in_background
 def restore_youtubedl_backup(sender):
@@ -111,10 +107,6 @@ def replace(file_path, pattern, subst):
     #Move new file
     shutil.move(abs_path, file_path)
 
-def setup_youtubedl_ui(sender):
-	return
-
-#ui.load_view('youtube-dl downloader').present('sheet')
 view = ui.View()
 view.background_color = 'white'
 backup_button = ui.Button(title='Backup YoutubeDL')
