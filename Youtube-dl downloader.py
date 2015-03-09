@@ -4,23 +4,26 @@
 # Replace function came from http://stackoverflow.com/questions/39086/search-and-replace-a-line-in-a-file-in-python
 # Download file was adapted from Python file downloader (https://gist.github.com/89edf288a15fde45682a)
 
-import ui
-import shutil
 import console
 import os
-import time
 import requests
-import zipfile
+import shutil
 import tempfile
+import time
+import ui
+import zipfile
 
 youtubedl_dir = 'youtube_dl'
 youtubedl_location = './site-packages/'
 backup_location = './backup/youtube_dl/'
 youtubedl_downloadurl = 'https://github.com/rg3/youtube-dl/archive/master.zip'
 youtubedl_unarchive_location = './youtube-dl-master/'
-files_to_change = [('utils.py','import ctypes','#import ctypes'),('utils.py','import pipes','#import pipes'),('YoutubeDL.py','self._err_file.isatty() and ',''),('downloader/common.py','(\'\r\x1b[K\' if sys.stderr.isatty() else \'\r\')','\'r\''),('downloader/common.py','(\'\r\x1b[K\' if sys.stderr.isatty() else \'\r\')','\r'),('extractor/common.py',' and sys.stderr.isatty()','')]
-                                                                                                                                                                                                                                                  
-                                                                                                                                                                                    
+files_to_change = [('utils.py','import ctypes','#import ctypes'),
+                   ('utils.py','import pipes','#import pipes'),
+                   ('YoutubeDL.py','self._err_file.isatty() and ',''),
+                   ('downloader/common.py','(\'\r\x1b[K\' if sys.stderr.isatty() else \'\r\')','\'r\''),
+                   ('downloader/common.py','(\'\r\x1b[K\' if sys.stderr.isatty() else \'\r\')','\r'),
+                   ('extractor/common.py',' and sys.stderr.isatty()','')]
 
 def backup_youtubedl(sender):
 	console.show_activity('Checking for youtube-dl')
@@ -29,12 +32,11 @@ def backup_youtubedl(sender):
 		if not os.path.exists(backup_location):
 			os.makedirs(backup_location)
 		shutil.move(youtubedl_location+youtubedl_dir,backup_location+youtubedl_dir+ time.strftime('%Y%m%d%H%M%S'))
-		
 	console.hide_activity()
 
 @ui.in_background
 def restore_youtubedl_backup(sender):
-	if not os.path.isdir(backup_location) or len(os.listdir(backup_location))==0:
+	if not os.path.isdir(backup_location) or not os.listdir(backup_location):
 		console.alert('Nothing to do', 'No backups found to restore')
 	else: 
 		folders = os.listdir(backup_location)
@@ -43,20 +45,19 @@ def restore_youtubedl_backup(sender):
 		console.alert('Success','Successfully restored '+folder)
 
 def downloadfile(url):
-	localFilename = url.split('/')[-1]
-	if localFilename == '': localFilename = 'download'
+	localFilename = url.split('/')[-1] or 'download'
 	with open(localFilename, 'wb') as f:
 		r = requests.get(url, stream=True)
 		total_length = r.headers.get('content-length')
-		if not total_length:
-			f.write(r.content)
-		else:
+		if total_length:
 			dl = 0
 			total_length = float(total_length)
 			for chunk in r.iter_content(1024):
 				dl += len(chunk)
 				f.write(chunk)
 				#.setprogress(dl/total_length*100.0)
+		else:
+			f.write(r.content)
 	return localFilename
 
 def process_file(path):
@@ -66,7 +67,8 @@ def process_file(path):
 @ui.in_background	
 def update_youtubedl(sender):
 	if os.path.exists(youtubedl_location+youtubedl_dir):
-		if not console.alert('Continue','Are you sure you want to update youtubedl exists in site-packages and will be overwritten','OK'):
+		msg = 'Are you sure you want to update youtubedl exists in site-packages and will be overwritten'
+		if not console.alert('Continue',msg,'OK'):
 			return
 	console.show_activity('Downloading')
 	file = downloadfile(youtubedl_downloadurl)
@@ -82,13 +84,11 @@ def update_youtubedl(sender):
 	os.remove(file)
 	console.show_activity('Making youtube-dl friendly')
 	process_youtubedl_for_pythonista()
-	
 	console.hide_activity()
 		
 def process_youtubedl_for_pythonista():
 	for file in files_to_change:
 		replace(youtubedl_location+youtubedl_dir+'/'+file[0],file[1],file[2])
-	
 
 def replace(file_path, pattern, subst):
     #Create temp file
@@ -101,39 +101,33 @@ def replace(file_path, pattern, subst):
     new_file.close()
     os.close(fh)
     old_file.close()
-    
     #Remove original file
     os.remove(file_path)
     #Move new file
     shutil.move(abs_path, file_path)
 
+def make_button(title, action):
+    button = ui.Button(title=title)
+    button.action = action
+    button.background_color ='lightgrey'
+    button.border_color = 'black'
+    button.border_width = 1
+    button.flex = 'WB'
+    return button
+
 view = ui.View()
 view.background_color = 'white'
-backup_button = ui.Button(title='Backup YoutubeDL')
-backup_button.background_color ='lightgrey'
-backup_button.border_color = 'black'
-backup_button.border_width = 1
+
+backup_button = make_button(title='Backup YoutubeDL', action=backup_youtubedl)
 backup_button.center = (view.width * 0.5, view.y+backup_button.height)
-backup_button.flex = 'WB'
-backup_button.action = backup_youtubedl
 view.add_subview(backup_button)
 
-restore_button = ui.Button(title='Restore YoutubeDL')
-restore_button.background_color ='lightgrey'
-restore_button.border_color = 'black'
-restore_button.border_width = 1
+restore_button = make_button(title='Restore YoutubeDL', action=restore_youtubedl_backup)
 restore_button.center = (view.width * 0.5, backup_button.y+restore_button.height*1.75)
-restore_button.flex = 'WB'
-restore_button.action = restore_youtubedl_backup
 view.add_subview(restore_button)
 
-download_button = ui.Button(title='Download YoutubeDL')
-download_button.background_color ='lightgrey'
-download_button.border_color = 'black'
-download_button.border_width = 1
+download_button = make_button(title='Download YoutubeDL', action=update_youtubedl)
 download_button.center = (view.width * 0.5, restore_button.y+download_button.height*1.75)
-download_button.flex = 'WB'
-download_button.action = update_youtubedl
 view.add_subview(download_button)
 
 view.present('sheet')
