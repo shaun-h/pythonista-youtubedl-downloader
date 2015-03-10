@@ -112,7 +112,7 @@ def make_button(title, action):
     button.flex = 'WB'
     return button
 
-view = ui.View()
+view = ui.View(frame=(0,0,172,132))
 view.background_color = 'white'
 
 backup_button = make_button(title='Backup YoutubeDL', action=backup_youtubedl)
