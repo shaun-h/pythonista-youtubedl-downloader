@@ -92,11 +92,11 @@ def process_youtubedl_for_pythonista():
         replace_in_file(youtubedl_location+youtubedl_dir+'/'+filename, old_str, new_str)
 
 def replace_in_file(file_path, old_str, new_str):
-    with open(file_path) as old_file:
+    with open(file_path, encoding='utf-8') as old_file:
         #Create temp file
         fh, abs_path = tempfile.mkstemp()
         os.close(fh)  # close low level and reopen high level
-        with open(abs_path,'w') as new_file:
+        with open(abs_path, encoding='utf-8', mode='w') as new_file:
             for line in old_file:
                 new_file.write(line.replace(old_str, new_str))
     #Remove original file
