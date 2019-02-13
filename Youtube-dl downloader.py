@@ -1,5 +1,5 @@
+#! python2
 # coding: utf-8
-# author: Shaun Hevey
 # youtube-dl downloader is used to download youtube_dl and patch it to work in Pythonista.
 # Replace function came from http://stackoverflow.com/questions/39086/search-and-replace-a-line-in-a-file-in-python
 # Download file was adapted from Python file downloader (https://gist.github.com/89edf288a15fde45682a)
@@ -13,8 +13,9 @@ import time
 import ui
 import zipfile
 
+youtubedl_location = os.path.expanduser('~/Documents/site-packages/')
 youtubedl_dir = 'youtube_dl'
-youtubedl_location = './site-packages/'
+
 backup_location = './backup/youtube_dl/'
 youtubedl_downloadurl = 'https://github.com/rg3/youtube-dl/archive/master.zip'
 youtubedl_unarchive_location = './youtube-dl-master/'
@@ -77,7 +78,7 @@ def update_youtubedl(sender):
     console.show_activity('Moving')
     if os.path.exists(youtubedl_location+youtubedl_dir):
         shutil.rmtree(youtubedl_location+youtubedl_dir)
-    shutil.move(youtubedl_unarchive_location+youtubedl_dir, youtubedl_location)
+    shutil.move(youtubedl_unarchive_location+youtubedl_dir, youtubedl_location+youtubedl_dir)
     console.show_activity('Cleaning Up Download Files')
     shutil.rmtree(youtubedl_unarchive_location)
     os.remove(file)
@@ -112,6 +113,7 @@ def make_button(title, action):
     button.flex = 'WB'
     return button
 
+console.hide_activity()
 view = ui.View(frame=(0,0,172,132))
 view.background_color = 'white'
 
