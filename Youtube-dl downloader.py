@@ -1,4 +1,4 @@
-#! python2
+#! python3
 # coding: utf-8
 # youtube-dl downloader is used to download youtube_dl and patch it to work in Pythonista.
 # Replace function came from http://stackoverflow.com/questions/39086/search-and-replace-a-line-in-a-file-in-python
